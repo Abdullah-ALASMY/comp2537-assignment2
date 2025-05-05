@@ -9,35 +9,39 @@ const Joi = require('joi');
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
 
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware to parse URL-encoded data
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session setup
+// Build MongoDB connection URL from env variables
+const mongoUrl = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}/${process.env.MONGODB_DATABASE}?retryWrites=true&w=majority&tls=true`;
+
+// Session configuration with MongoDB store
 app.use(session({
   secret: process.env.NODE_SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URL
+    mongoUrl: mongoUrl
   }),
-  cookie: { maxAge: 1000 * 60 * 60 }
+  cookie: { maxAge: 1000 * 60 * 60 } // 1 hour
 }));
 
-// MongoDB connection
+// Connect to MongoDB
 let db;
-MongoClient.connect(process.env.MONGO_URL)
+MongoClient.connect(mongoUrl)
   .then(client => {
-    db = client.db();
+    db = client.db(process.env.MONGODB_DATABASE);
     console.log("Connected to MongoDB");
   })
   .catch(err => console.error("MongoDB connection error:", err));
 
-// Home Page
+// Home page
 app.get('/', (req, res) => {
   if (!req.session.name) {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
@@ -49,10 +53,12 @@ app.get('/', (req, res) => {
   }
 });
 
-// loogin page (GET)
+// Login (GET)
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
+
+// Login (POST)
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -67,12 +73,7 @@ app.post('/login', async (req, res) => {
   }
 
   const user = await db.collection("users").findOne({ email: email });
-  if (!user) {
-    return res.send("Invalid email or password.");
-  }
-
-  const passwordMatch = await bcrypt.compare(password, user.password);
-  if (!passwordMatch) {
+  if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.send("Invalid email or password.");
   }
 
@@ -80,15 +81,12 @@ app.post('/login', async (req, res) => {
   res.redirect('/members');
 });
 
-
-
-
-// Signup Page (GET)
+// Signup (GET)
 app.get('/signup', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'signup.html'));
 });
 
-// Signup Logic (POST)
+// Signup (POST)
 app.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -118,7 +116,7 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-
+// Members Area
 app.get('/members', (req, res) => {
   if (!req.session.name) {
     return res.redirect('/login');
@@ -129,9 +127,7 @@ app.get('/members', (req, res) => {
 
   const htmlPath = path.join(__dirname, 'views', 'members.html');
   fs.readFile(htmlPath, 'utf8', (err, html) => {
-    if (err) {
-      return res.status(500).send("Error loading members page.");
-    }
+    if (err) return res.status(500).send("Error loading members page.");
 
     const rendered = html
       .replace('{{name}}', req.session.name)
@@ -141,23 +137,20 @@ app.get('/members', (req, res) => {
   });
 });
 
-
+// Logout and destroy session
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
-    if (err) {
-      return res.send("Error logging out.");
-    }
+    if (err) return res.send("Error logging out.");
     res.redirect('/');
   });
 });
-
 
 // 404 handler
 app.use((req, res) => {
   res.status(404).send("<h1>404 - Page Not Found</h1>");
 });
 
-// Start Server
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
