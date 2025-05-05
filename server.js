@@ -23,12 +23,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URL,
-    crypto: {
-      secret: process.env.MONGODB_SESSION_SECRET
-    }
+    mongoUrl: process.env.MONGO_URL
   }),
-  cookie: { maxAge: 1000 * 60 * 60 } // 1 hour lifetime for session
+  cookie: { maxAge: 1000 * 60 * 60 }
 }));
 
 // MongoDB connection
