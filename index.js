@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const mongoUrl = process.env.MONGODB_URI;
-
+console.log("Mongo URI:", mongoUrl);
 let db;
 
 MongoClient.connect(mongoUrl)
