@@ -10,7 +10,7 @@ const { MongoClient } = require('mongodb');
 const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -19,25 +19,21 @@ const mongoUrl = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGOD
 
 let db;
 
-// Connect to MongoDB first
 MongoClient.connect(mongoUrl)
   .then(client => {
     db = client.db(process.env.MONGODB_DATABASE);
     console.log("Connected to MongoDB");
 
-    // Configure session only after MongoDB is connected
     app.use(session({
       secret: process.env.NODE_SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
       store: MongoStore.create({
-        client: client,  
+        client: client,
         dbName: process.env.MONGODB_DATABASE,
       }),
       cookie: { maxAge: 1000 * 60 * 60 }
     }));
-
-    // Routes go here ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
     app.get('/', (req, res) => {
       if (!req.session.name) {
@@ -132,9 +128,8 @@ MongoClient.connect(mongoUrl)
       res.status(404).send("<h1>404 - Page Not Found</h1>");
     });
 
-    // Finally start server
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
 
   })
