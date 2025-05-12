@@ -1,0 +1,43 @@
+<%- include('templates/header') %>
+
+    <h1>Admin Panel</h1>
+    <table class="table mt-4">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (users && users.length> 0) { %>
+                <% users.forEach(user=> { %>
+                    <tr>
+                        <td>
+                            <%= user.name %>
+                        </td>
+                        <td>
+                            <%= user.email %>
+                        </td>
+                        <td>
+                            <%= user.role %>
+                        </td>
+                        <td>
+                            <% if (user.role==='admin' ) { %>
+                                <a href="/admin/demote/<%= user.email %>" class="btn btn-warning">Demote</a>
+                                <% } else { %>
+                                    <a href="/admin/promote/<%= user.email %>" class="btn btn-success">Promote</a>
+                                    <% } %>
+                        </td>
+                    </tr>
+                    <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="4">No users found.</td>
+                            </tr>
+                            <% } %>
+        </tbody>
+    </table>
+
+    <%- include('templates/footer') %>

@@ -1,0 +1,19 @@
+<%- include('templates/header') %>
+
+    <h1>Welcome to the Members Area, <%= user %>!</h1>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <img src="/images/pic1.gif" class="img-fluid" alt="Image 1">
+        </div>
+        <div class="col-md-4">
+            <img src="/images/pic2.gif" class="img-fluid" alt="Image 2">
+        </div>
+        <div class="col-md-4">
+            <img src="/images/pic3.gif" class="img-fluid" alt="Image 3">
+        </div>
+    </div>
+
+    <a href="/logout" class="btn btn-danger mt-4">Logout</a>
+
+    <%- include('templates/footer') %>
