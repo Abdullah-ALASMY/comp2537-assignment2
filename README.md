@@ -39,9 +39,7 @@ Self-graded Assignment 2 Checklist
 
 
 Description:
-This is a basic Node.js web app with user login and signup. 
-It uses MongoDB to store users and sessions.
-Only logged-in users can access the members page, which shows a random image.
+This is a Node.js web application featuring user authentication and role-based authorization. Users can sign up, log in, and access a members-only page displaying a responsive grid of three images. Admins have access to an admin panel where they can view all users and promote or demote them. The app is built using EJS for templating and Bootstrap for responsive design. User sessions are securely managed with MongoDB, and the app is deployed on Render with secure environment variables.
 
 Technologies Used:
 - Node.js
