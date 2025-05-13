@@ -132,10 +132,29 @@ app.get('/admin/demote/:email', async (req, res) => {
 });
 
 
-    // logout User
-    app.get('/logout', (req, res) => {
-      req.session.destroy(() => res.redirect('/'));
-    });
+// Logout Route
+app.get('/logout', (req, res) => {
+  req.session.destroy(async (err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.send("Error logging out.");
+    }
+
+    res.clearCookie('connect.sid');
+
+    const sessionStore = req.sessionStore;
+    if (sessionStore) {
+      try {
+        await sessionStore.destroy(req.sessionID);
+      } catch (err) {
+        console.error("Error destroying session in store:", err);
+      }
+    }
+
+    res.redirect('/');
+  });
+});
+
 
     // 404 Route
     app.use((req, res) => {
